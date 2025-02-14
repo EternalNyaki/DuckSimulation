@@ -1,4 +1,3 @@
-using System.Threading;
 using NodeCanvas.Framework;
 using ParadoxNotion.Design;
 using UnityEngine;
@@ -11,7 +10,6 @@ namespace NodeCanvas.Tasks.Actions
 	public class GoToTarget_ACT : ActionTask
 	{
 		public BBParameter<Transform> target;
-		public float sampleInterval;
 
 		[Tooltip("Should the position of the target be sampled only once or continually")]
 		public bool sampleOnce = false;
@@ -19,7 +17,6 @@ namespace NodeCanvas.Tasks.Actions
 		public BBParameter<Vector3> destination;
 
 		private NavMeshAgent _navAgent;
-		private float _timer;
 
 		//Use for initialization. This is called only once in the lifetime of the task.
 		//Return null if init was successfull. Return an error string otherwise
@@ -41,26 +38,20 @@ namespace NodeCanvas.Tasks.Actions
 		protected override void OnExecute()
 		{
 			destination.value = target.value.position;
-
-			_timer = 0f;
 		}
 
 		//Called once per frame while the action is active.
 		protected override void OnUpdate()
 		{
-			if (!sampleOnce && _timer >= sampleInterval)
+			if (!sampleOnce)
 			{
 				destination.value = target.value.position;
-
-				_timer -= sampleInterval;
 			}
 
 			if (_navAgent.remainingDistance <= 0.01f)
 			{
 				EndAction(true);
 			}
-
-			if (!sampleOnce) { _timer += Time.deltaTime; }
 		}
 
 		//Called when the task is disabled.
