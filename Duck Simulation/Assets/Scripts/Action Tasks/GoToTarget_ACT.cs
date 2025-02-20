@@ -3,11 +3,16 @@ using ParadoxNotion.Design;
 using UnityEngine;
 using UnityEngine.AI;
 
+
 namespace NodeCanvas.Tasks.Actions
 {
-	public class GoToPoint_ACT : ActionTask
+
+	public class GoToTarget_ACT : ActionTask
 	{
-		public BBParameter<Vector3> targetPoint;
+		public BBParameter<Transform> target;
+
+		[Tooltip("Should the position of the target be sampled only once or continually")]
+		public bool sampleOnce = false;
 
 		public BBParameter<Vector3> destination;
 
@@ -32,13 +37,18 @@ namespace NodeCanvas.Tasks.Actions
 		//EndAction can be called from anywhere.
 		protected override void OnExecute()
 		{
-			destination.value = targetPoint.value;
+			destination.value = target.value.position;
 		}
 
 		//Called once per frame while the action is active.
 		protected override void OnUpdate()
 		{
-			if (_navAgent.remainingDistance <= 0.01f)
+			if (!sampleOnce)
+			{
+				destination.value = target.value.position;
+			}
+
+			if (_navAgent.hasPath && _navAgent.remainingDistance <= 0.01f)
 			{
 				EndAction(true);
 			}

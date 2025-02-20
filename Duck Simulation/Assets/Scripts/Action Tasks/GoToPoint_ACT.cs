@@ -1,22 +1,29 @@
 using NodeCanvas.Framework;
 using ParadoxNotion.Design;
 using UnityEngine;
-
+using UnityEngine.AI;
 
 namespace NodeCanvas.Tasks.Actions
 {
-
-	public class Wander_ACT : ActionTask
+	public class GoToPoint_ACT : ActionTask
 	{
-		public float wanderInterval;
+		public BBParameter<Vector3> targetPoint;
+
 		public BBParameter<Vector3> destination;
 
-		private float _timeSinceLastChangedTarget;
+		private NavMeshAgent _navAgent;
 
 		//Use for initialization. This is called only once in the lifetime of the task.
 		//Return null if init was successfull. Return an error string otherwise
 		protected override string OnInit()
 		{
+			if (!destination.useBlackboard)
+			{
+				Debug.LogError("No connected blackboard variable for destination output. Please assign a blackboard reference.");
+			}
+
+			_navAgent = agent.GetComponent<NavMeshAgent>();
+
 			return null;
 		}
 
@@ -25,19 +32,15 @@ namespace NodeCanvas.Tasks.Actions
 		//EndAction can be called from anywhere.
 		protected override void OnExecute()
 		{
-			destination.value = new Vector3(Random.insideUnitCircle.x, 0f, Random.insideUnitCircle.y) * 50f;
+			destination.value = targetPoint.value;
 		}
 
 		//Called once per frame while the action is active.
 		protected override void OnUpdate()
 		{
-			_timeSinceLastChangedTarget += Time.deltaTime;
-
-			if (_timeSinceLastChangedTarget >= wanderInterval)
+			if (_navAgent.hasPath && _navAgent.remainingDistance <= 0.01f)
 			{
-				destination.value = new Vector3(Random.insideUnitCircle.x, 0f, Random.insideUnitCircle.y) * 50f;
-
-				_timeSinceLastChangedTarget -= wanderInterval;
+				EndAction(true);
 			}
 		}
 

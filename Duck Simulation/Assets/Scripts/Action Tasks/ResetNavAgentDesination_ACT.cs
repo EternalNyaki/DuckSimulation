@@ -1,24 +1,21 @@
 using NodeCanvas.Framework;
 using ParadoxNotion.Design;
-using UnityEngine;
+using UnityEngine.AI;
+
 
 namespace NodeCanvas.Tasks.Actions
 {
 
-	public class PlayAnimLoop_ACT : ActionTask
+	public class ResetNavAgentDesination_ACT : ActionTask
 	{
-		public string animationName;
 
-		private Animator _animator;
-
-		private int _animationHash;
+		private NavMeshAgent _navAgent;
 
 		//Use for initialization. This is called only once in the lifetime of the task.
 		//Return null if init was successfull. Return an error string otherwise
 		protected override string OnInit()
 		{
-			_animator = agent.GetComponent<Animator>();
-			_animationHash = Animator.StringToHash(animationName);
+			_navAgent = agent.GetComponent<NavMeshAgent>();
 
 			return null;
 		}
@@ -28,13 +25,9 @@ namespace NodeCanvas.Tasks.Actions
 		//EndAction can be called from anywhere.
 		protected override void OnExecute()
 		{
-			_animator.Play(_animationHash);
-			if (!_animator.GetCurrentAnimatorStateInfo(0).loop)
-			{
-				_animator.StopPlayback();
-				Debug.LogError("Given animation does not loop. Set it to loop in the Animator or use the PlayAnimOneShot action task");
-			}
+			_navAgent.ResetPath();
 
+			EndAction(true);
 		}
 
 		//Called once per frame while the action is active.
@@ -46,7 +39,7 @@ namespace NodeCanvas.Tasks.Actions
 		//Called when the task is disabled.
 		protected override void OnStop()
 		{
-			_animator.StopPlayback();
+
 		}
 
 		//Called when the task is paused.
